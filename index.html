@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Hub Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#ff4d00;--primary-dim:rgba(255,77,0,0.13);--primary-border:rgba(255,77,0,0.35);
+  --bg:#080808;--surface:#111;--surface2:#1a1a1a;--surface3:#222;
+  --border:rgba(255,255,255,0.07);--text:#f0f0f0;--muted:rgba(255,255,255,0.38);
+  --radius:12px;--glow:0 0 40px rgba(255,77,0,0.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(-50%);width:900px;height:420px;background:radial-gradient(ellipse,rgba(255,77,0,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* AUTH */
+.auth-page{display:none;position:fixed;inset:0;z-index:2000;background:var(--bg);align-items:center;justify-content:center;animation:fadeIn .25s ease}
+.auth-page.active{display:flex}
+.auth-box{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px 36px;margin:20px;box-shadow:0 30px 80px rgba(0,0,0,0.6);animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.auth-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--primary);text-shadow:var(--glow);margin-bottom:6px}
+.auth-logo span{color:rgba(255,255,255,0.5)}
+.auth-tagline{font-size:13px;color:var(--muted);margin-bottom:28px}
+.auth-box h2{font-size:20px;font-weight:600;margin-bottom:22px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.field input{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,background .2s}
+.field input:focus{border-color:var(--primary-border);background:var(--surface3)}
+.field input::placeholder{color:var(--muted)}
+.auth-err{background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ff6b6b;margin-bottom:14px;display:none}
+.btn-primary{width:100%;padding:13px;background:var(--primary);border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.3px;transition:opacity .2s,transform .1s,box-shadow .2s;box-shadow:0 4px 20px rgba(255,77,0,0.3)}
+.btn-primary:hover{opacity:.9;box-shadow:0 6px 28px rgba(255,77,0,0.4)}.btn-primary:active{transform:scale(.98)}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.auth-switch{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.auth-switch a{color:var(--primary);cursor:pointer;font-weight:500}.auth-switch a:hover{text-decoration:underline}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;padding:0 20px;background:rgba(8,8,8,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:16px;height:64px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--primary);text-shadow:var(--glow);white-space:nowrap;flex-shrink:0;cursor:pointer}
+.logo span{color:rgba(255,255,255,.5);font-size:22px}
+.search-row{flex:1;display:flex;max-width:520px}
+.search-row input{flex:1;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-right:none;border-radius:var(--radius) 0 0 var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,background .2s}
+.search-row input:focus{border-color:var(--primary-border);background:var(--surface2)}
+.search-row input::placeholder{color:var(--muted)}
+.search-row button{padding:10px 20px;background:var(--primary);border:none;border-radius:0 var(--radius) var(--radius) 0;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:opacity .2s}
+.search-row button:hover{opacity:.88}
+.user-area{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.avatar-btn{width:36px;height:36px;border-radius:50%;background:var(--primary);border:2px solid var(--primary-border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;transition:box-shadow .2s}
+.avatar-btn:hover{box-shadow:0 0 0 3px var(--primary-dim)}
+.user-name{font-size:13px;font-weight:500;color:var(--muted)}
+.logout-btn{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:color .2s,border-color .2s}
+.logout-btn:hover{color:var(--primary);border-color:var(--primary-border)}
+.login-header-btn{padding:8px 18px;background:var(--primary);border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:opacity .2s}
+.login-header-btn:hover{opacity:.88}
+
+/* HOME */
+#home{position:relative;z-index:1}
+.section-label{max-width:1400px;margin:0 auto;padding:22px 20px 10px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.video-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px 28px;max-width:1400px;margin:0 auto}
+@media(min-width:600px){.video-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.video-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1200px){.video-grid{grid-template-columns:repeat(5,1fr)}}
+.video-card{background:var(--surface);border-radius:var(--radius);overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s,border-color .2s;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.video-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 14px 40px rgba(0,0,0,.5),0 0 0 1px rgba(255,77,0,.2);border-color:rgba(255,77,0,.25)}
+.thumb{aspect-ratio:16/9;background:#000;position:relative;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.video-card:hover .thumb img{transform:scale(1.06)}
+.play-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.video-card:hover .play-icon{opacity:1}
+.play-icon svg{width:42px;height:42px;filter:drop-shadow(0 2px 10px rgba(0,0,0,.7))}
+.dur{position:absolute;bottom:7px;right:7px;background:rgba(0,0,0,.82);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px}
+.card-body{padding:10px 12px 13px}
+.card-title{font-size:13px;font-weight:500;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:5px}
+.card-meta{font-size:11px;color:var(--muted)}
+#status{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px}
+.spinner{display:inline-block;width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#load-more-btn{display:none;margin:0 auto 44px;padding:12px 38px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:color .2s,border-color .2s,background .2s}
+#load-more-btn:hover{color:var(--text);border-color:var(--primary);background:var(--primary-dim)}
+
+/* PLAYER */
+#player-page{display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:999;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.player-topbar{display:flex;align-items:center;gap:14px;padding:14px 20px;background:rgba(8,8,8,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{display:flex;align-items:center;gap:8px;color:var(--muted);cursor:pointer;font-size:14px;font-weight:500;transition:color .2s}
+.back-btn:hover{color:var(--primary)}.back-btn svg{width:18px;height:18px}
+.player-topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--primary);margin-left:auto;opacity:.5}
+.video-wrap{background:#000;width:100%}
+.video-wrap video{width:100%;max-height:56vw;display:block;background:#000}
+.player-layout{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr}
+@media(min-width:960px){.player-layout{grid-template-columns:1fr 360px;gap:24px;padding:24px 20px;align-items:start}}
+.player-meta{padding:20px}
+@media(min-width:960px){.player-meta{padding:0}}
+.player-title{font-size:18px;font-weight:600;line-height:1.4;margin-bottom:10px}
+.player-stats{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin-bottom:16px;flex-wrap:wrap}
+.player-stats .dot{width:3px;height:3px;border-radius:50%;background:var(--muted)}
+
+/* ACTION BAR */
+.action-bar{display:flex;align-items:center;gap:8px;padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
+.action-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:50px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;user-select:none}
+.action-btn:hover{color:var(--text);border-color:rgba(255,255,255,.18);background:var(--surface3)}
+.action-btn svg{width:17px;height:17px;flex-shrink:0}
+.action-btn.liked{color:var(--primary);border-color:var(--primary-border);background:var(--primary-dim)}
+.action-btn.liked svg{fill:var(--primary);stroke:var(--primary)}
+
+/* COMMENTS */
+.comments-section{margin-top:4px}
+.comments-header{font-size:14px;font-weight:600;margin-bottom:16px}
+.comments-header span{color:var(--muted);font-weight:400;font-size:13px;margin-left:6px}
+.comment-input-row{display:flex;gap:10px;margin-bottom:20px;align-items:flex-start}
+.comment-avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-top:2px}
+.comment-input-wrap{flex:1}
+.comment-input-wrap textarea{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;resize:none;outline:none;min-height:42px;max-height:120px;overflow:hidden;transition:border-color .2s,background .2s;line-height:1.5}
+.comment-input-wrap textarea:focus{border-color:var(--primary-border);background:var(--surface3)}
+.comment-input-wrap textarea::placeholder{color:var(--muted)}
+.comment-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.btn-cancel{padding:7px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:color .2s,border-color .2s}
+.btn-cancel:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.btn-post{padding:7px 18px;background:var(--primary);border:none;border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:opacity .2s}
+.btn-post:hover{opacity:.88}.btn-post:disabled{opacity:.45;cursor:not-allowed}
+.comment-item{display:flex;gap:10px;margin-bottom:18px;animation:fadeUp .3s ease}
+.c-avatar{width:32px;height:32px;border-radius:50%;background:var(--surface3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--muted);margin-top:1px}
+.c-name{font-size:13px;font-weight:600;margin-bottom:3px}
+.c-name span{font-size:11px;font-weight:400;color:var(--muted);margin-left:8px}
+.c-text{font-size:13px;line-height:1.55;color:rgba(255,255,255,.82)}
+.no-comments{text-align:center;padding:28px;color:var(--muted);font-size:13px}
+.login-gate{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.login-gate a{color:var(--primary);cursor:pointer;font-weight:500}.login-gate a:hover{text-decoration:underline}
+
+/* RELATED */
+.related-wrap{padding:20px}
+@media(min-width:960px){.related-wrap{padding:0}}
+.related-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+@media(min-width:960px){#related-grid{grid-template-columns:1fr!important;padding:0}}
+
+/* SHARE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal-overlay.active{display:flex;animation:fadeIn .2s ease}
+.modal-box{width:100%;max-width:400px;margin:20px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;animation:slideUp .25s cubic-bezier(.34,1.56,.64,1)}
+.modal-box h3{font-size:17px;font-weight:600;margin-bottom:6px}
+.modal-box p{font-size:13px;color:var(--muted);margin-bottom:18px}
+.share-url{display:flex}
+.share-url input{flex:1;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-right:none;border-radius:9px 0 0 9px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.share-url button{padding:10px 16px;background:var(--primary);border:none;border-radius:0 9px 9px 0;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:opacity .2s}
+.share-url button:hover{opacity:.88}
+.modal-close{display:block;width:100%;margin-top:14px;padding:10px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:color .2s,border-color .2s}
+.modal-close:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.copy-success{text-align:center;font-size:12px;color:#4caf50;margin-top:8px;opacity:0;transition:opacity .3s}
+.copy-success.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="auth-page" id="login-page">
+  <div class="auth-box">
+    <div class="auth-logo">Video<span>Hub</span> Pro</div>
+    <div class="auth-tagline">Sign in to like, comment &amp; share</div>
+    <h2>Welcome back</h2>
+    <div class="auth-err" id="login-err"></div>
+    <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="auth-switch">No account? <a onclick="showPage('register')">Create one</a></div>
+    <div class="auth-switch" style="margin-top:10px"><a onclick="showPage('home')" style="color:var(--muted)">← Browse without signing in</a></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="auth-page" id="register-page">
+  <div class="auth-box">
+    <div class="auth-logo">Video<span>Hub</span> Pro</div>
+    <div class="auth-tagline">Join the community</div>
+    <h2>Create account</h2>
+    <div class="auth-err" id="reg-err"></div>
+    <div class="field"><label>Username</label><input type="text" id="reg-name" placeholder="cooluser99"></div>
+    <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="reg-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"></div>
+    <button class="btn-primary" id="reg-btn" onclick="doRegister()">Create Account</button>
+    <div class="auth-switch">Already have one? <a onclick="showPage('login')">Sign in</a></div>
+    <div class="auth-switch" style="margin-top:10px"><a onclick="showPage('home')" style="color:var(--muted)">← Browse without signing in</a></div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home">
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo" onclick="closeVideo()">Video<span>Hub</span> Pro</div>
+      <div class="search-row">
+        <input id="q" placeholder="Search videos…" onkeydown="if(event.key==='Enter')search(true)">
+        <button onclick="search(true)">Search</button>
+      </div>
+      <div class="user-area" id="user-area"></div>
+    </div>
+  </header>
+  <div class="section-label" id="section-label">Trending Now</div>
+  <div id="status"><div class="spinner"></div><br>Loading videos…</div>
+  <div id="grid" class="video-grid"></div>
+  <button id="load-more-btn" onclick="search(false)">Load More</button>
+</div>
+
+<!-- PLAYER -->
+<div id="player-page">
+  <div class="player-topbar">
+    <div class="back-btn" onclick="closeVideo()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </div>
+    <div class="player-topbar-logo">VHP</div>
+  </div>
+  <div class="video-wrap"><video id="player" controls playsinline></video></div>
+  <div class="player-layout">
+    <div class="player-meta">
+      <div id="meta"></div>
+      <div class="action-bar">
+        <button class="action-btn" id="like-btn" onclick="toggleLike()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span id="like-count">0</span> Likes
+        </button>
+        <button class="action-btn" onclick="focusComment()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="comment-count">0</span> Comments
+        </button>
+        <button class="action-btn" onclick="openShare()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+      </div>
+      <div class="comments-section">
+        <div class="comments-header">Comments <span id="comment-count-2"></span></div>
+        <div id="comment-input-area"></div>
+        <div id="comments-list"></div>
+      </div>
+    </div>
+    <div class="related-wrap">
+      <div class="related-label">Up Next</div>
+      <div id="related-grid" class="video-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="share-modal" onclick="if(event.target===this)closeShare()">
+  <div class="modal-box">
+    <h3>Share this video</h3>
+    <p>Copy the link and share it anywhere.</p>
+    <div class="share-url">
+      <input type="text" id="share-url-input" readonly>
+      <button onclick="copyShare()">Copy</button>
+    </div>
+    <div class="copy-success" id="copy-msg">✓ Copied!</div>
+    <button class="modal-close" onclick="closeShare()">Close</button>
+  </div>
+</div>
+
+<script>
+const API      = "/api/proxy";
+const AUTH_API = "/api/auth";
+const VID_API  = "/api/videos";
+
+let page=1,loading=false,hasMore=true,cardDelay=0;
+let relPage=1,currentVideo=null,currentUser=null;
+
+/* ── INIT ── */
+async function init(){
+  await checkSession();
+  renderUserArea();
+  const {q,v}=getQuery();
+  if(q) document.getElementById("q").value=q;
+  if(v) restoreVideo(v); else search(true);
+}
+window.addEventListener("popstate",()=>init());
+
+/* ── SESSION ── */
+async function checkSession(){
+  try{
+    const s=sessionStorage.getItem("vhp_user");
+    if(s){currentUser=JSON.parse(s);return;}
+    const r=await fetch(`${AUTH_API}/me`,{credentials:"include"});
+    if(r.ok){currentUser=await r.json();sessionStorage.setItem("vhp_user",JSON.stringify(currentUser));}
+  }catch(e){}
+}
+
+function renderUserArea(){
+  const el=document.getElementById("user-area");
+  if(currentUser){
+    el.innerHTML=`<span class="user-name">${escHtml(currentUser.username)}</span><div class="avatar-btn">${currentUser.username[0].toUpperCase()}</div><button class="logout-btn" onclick="doLogout()">Sign out</button>`;
+  } else {
+    el.innerHTML=`<button class="login-header-btn" onclick="showPage('login')">Sign In</button>`;
+  }
+}
+
+/* ── PAGE NAV ── */
+function showPage(p){
+  document.getElementById("login-page").classList.remove("active");
+  document.getElementById("register-page").classList.remove("active");
+  ["login-err","reg-err"].forEach(id=>{const e=document.getElementById(id);e.style.display="none";e.textContent="";});
+  if(p==="login")    document.getElementById("login-page").classList.add("active");
+  if(p==="register") document.getElementById("register-page").classList.add("active");
+}
+
+/* ── AUTH ── */
+async function doLogin(){
+  const btn=document.getElementById("login-btn"),err=document.getElementById("login-err");
+  const email=document.getElementById("login-email").value.trim();
+  const pass=document.getElementById("login-pass").value;
+  if(!email||!pass){showErr(err,"Please fill in all fields.");return;}
+  btn.disabled=true;btn.textContent="Signing in…";
+  try{
+    const r=await fetch(`${AUTH_API}/login`,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(!r.ok){showErr(err,d.message||"Login failed.");btn.disabled=false;btn.textContent="Sign In";return;}
+    currentUser=d.user;sessionStorage.setItem("vhp_user",JSON.stringify(currentUser));
+    renderUserArea();showPage("home");
+    if(currentVideo)loadVideoMeta(currentVideo);
+  }catch(e){showErr(err,"Network error.");}
+  btn.disabled=false;btn.textContent="Sign In";
+}
+
+async function doRegister(){
+  const btn=document.getElementById("reg-btn"),err=document.getElementById("reg-err");
+  const name=document.getElementById("reg-name").value.trim();
+  const email=document.getElementById("reg-email").value.trim();
+  const pass=document.getElementById("reg-pass").value;
+  if(!name||!email||!pass){showErr(err,"Please fill in all fields.");return;}
+  btn.disabled=true;btn.textContent="Creating…";
+  try{
+    const r=await fetch(`${AUTH_API}/register`,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:name,email,password:pass})});
+    const d=await r.json();
+    if(!r.ok){showErr(err,d.message||"Registration failed.");btn.disabled=false;btn.textContent="Create Account";return;}
+    currentUser=d.user;sessionStorage.setItem("vhp_user",JSON.stringify(currentUser));
+    renderUserArea();showPage("home");
+  }catch(e){showErr(err,"Network error.");}
+  btn.disabled=false;btn.textContent="Create Account";
+}
+
+async function doLogout(){
+  try{await fetch(`${AUTH_API}/logout`,{method:"POST",credentials:"include"});}catch(e){}
+  currentUser=null;sessionStorage.removeItem("vhp_user");sessionStorage.removeItem("vhp_video");
+  renderUserArea();
+}
+
+function showErr(el,msg){el.textContent=msg;el.style.display="block";}
+
+/* ── URL ── */
+function getQuery(){const p=new URLSearchParams(location.search);return{q:p.get("q"),v:p.get("v")};}
+
+/* ── SEARCH ── */
+async function search(reset=false){
+  if(loading)return;
+  if(reset){
+    page=1;hasMore=true;cardDelay=0;
+    document.getElementById("grid").innerHTML="";
+    document.getElementById("load-more-btn").style.display="none";
+    document.getElementById("status").style.display="block";
+    document.getElementById("status").innerHTML=`<div class="spinner"></div><br>Loading…`;
+  }
+  const q=document.getElementById("q").value.trim()||"hot";
+  document.getElementById("section-label").textContent=q==="hot"?"Trending Now":`Results for "${q}"`;
+  loading=true;
+  history.pushState({},"",`/?q=${encodeURIComponent(q)}&page=${page}`);
+  try{
+    const r=await fetch(`${API}?q=${encodeURIComponent(q)}&page=${page}`);
+    const d=await r.json();
+    document.getElementById("status").style.display="none";
+    if(!d.videos?.length){hasMore=false;if(page===1){document.getElementById("status").style.display="block";document.getElementById("status").innerHTML="No videos found.";}loading=false;return;}
+    renderCards(d.videos,"grid");page++;
+    if(hasMore)document.getElementById("load-more-btn").style.display="block";
+  }catch(e){document.getElementById("status").style.display="block";document.getElementById("status").innerHTML="Failed to load.";}
+  loading=false;
+}
+
+/* ── RENDER CARDS ── */
+function renderCards(videos,gridId){
+  const grid=document.getElementById(gridId);
+  videos.forEach((v,i)=>{
+    const div=document.createElement("div");
+    div.className="video-card";
+    div.style.animationDelay=`${(cardDelay+i)*55}ms`;
+    div.innerHTML=`<div class="thumb"><img src="${v.thumbnail}" alt="${escHtml(v.title)}" loading="lazy"><div class="play-icon"><svg viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="22" fill="rgba(255,77,0,0.85)"/><polygon points="17,13 34,22 17,31" fill="#fff"/></svg></div>${v.duration?`<span class="dur">${v.duration}</span>`:""}</div><div class="card-body"><div class="card-title">${escHtml(v.title)}</div><div class="card-meta">${v.views||""}</div></div>`;
+    div.onclick=()=>playVideo(v);
+    grid.appendChild(div);
+  });
+  if(gridId==="grid")cardDelay+=videos.length;
+}
+
+/* ── PLAY ── */
+function playVideo(v,push=true){
+  currentVideo=v;
+  try{sessionStorage.setItem("vhp_video",JSON.stringify(v));}catch(e){}
+  document.getElementById("home").style.display="none";
+  document.getElementById("player-page").style.display="block";
+  document.getElementById("player-page").scrollTop=0;
+  const player=document.getElementById("player");
+  player.src=`/api/video?url=${encodeURIComponent(v.video_url)}`;
+  player.load();player.play().catch(()=>{});
+  document.getElementById("meta").innerHTML=`<div class="player-title">${escHtml(v.title)}</div><div class="player-stats">${v.views?`<span>${v.views}</span>`:""}${v.views&&v.duration?`<span class="dot"></span>`:""}${v.duration?`<span>${v.duration}</span>`:""}</div>`;
+  if(push)history.pushState({},"",`/?v=${encodeURIComponent(v.video_url)}`);
+  relPage=1;cardDelay=0;
+  document.getElementById("related-grid").innerHTML="";
+  loadRelated();loadVideoMeta(v);
+}
+
+/* ── LOAD LIKES + COMMENTS ── */
+async function loadVideoMeta(v){
+  const vid=encodeVideoId(v.video_url);
+  renderCommentInput();
+  try{
+    const[lr,cr]=await Promise.all([
+      fetch(`${VID_API}/${vid}/likes`,{credentials:"include"}),
+      fetch(`${VID_API}/${vid}/comments`,{credentials:"include"})
+    ]);
+    const ld=await lr.json(),cd=await cr.json();
+    document.getElementById("like-count").textContent=ld.count||0;
+    const lb=document.getElementById("like-btn");
+    if(ld.userLiked)lb.classList.add("liked");else lb.classList.remove("liked");
+    const cc=cd.comments?.length||0;
+    document.getElementById("comment-count").textContent=cc;
+    document.getElementById("comment-count-2").textContent=cc?`(${cc})`:"";
+    renderComments(cd.comments||[]);
+  }catch(e){console.error(e);}
+}
+
+function encodeVideoId(url){return btoa(url).replace(/\+/g,"-").replace(/\//g,"_").replace(/=/g,"");}
+
+/* ── LIKE ── */
+async function toggleLike(){
+  if(!currentUser){showPage("login");return;}
+  const vid=encodeVideoId(currentVideo.video_url);
+  try{
+    const r=await fetch(`${VID_API}/${vid}/like`,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({videoTitle:currentVideo.title,videoThumb:currentVideo.thumbnail})});
+    const d=await r.json();
+    document.getElementById("like-count").textContent=d.count||0;
+    const lb=document.getElementById("like-btn");
+    if(d.liked)lb.classList.add("liked");else lb.classList.remove("liked");
+  }catch(e){console.error(e);}
+}
+
+/* ── COMMENTS ── */
+function renderCommentInput(){
+  const area=document.getElementById("comment-input-area");
+  if(!currentUser){
+    area.innerHTML=`<div class="login-gate">Want to comment? <a onclick="showPage('login')">Sign in</a> or <a onclick="showPage('register')">create an account</a>.</div>`;
+    return;
+  }
+  area.innerHTML=`<div class="comment-input-row"><div class="comment-avatar">${currentUser.username[0].toUpperCase()}</div><div class="comment-input-wrap"><textarea id="comment-text" placeholder="Add a comment…" rows="1" oninput="autoResize(this)"></textarea><div class="comment-actions"><button class="btn-cancel" onclick="clearComment()">Cancel</button><button class="btn-post" id="post-btn" onclick="postComment()">Post</button></div></div></div>`;
+}
+
+function autoResize(el){el.style.height="auto";el.style.height=el.scrollHeight+"px";}
+function clearComment(){const t=document.getElementById("comment-text");if(t){t.value="";t.style.height="auto";}}
+function focusComment(){const t=document.getElementById("comment-text");if(t)t.focus();else showPage("login");}
+
+async function postComment(){
+  if(!currentUser){showPage("login");return;}
+  const t=document.getElementById("comment-text");
+  const text=t.value.trim();if(!text)return;
+  const btn=document.getElementById("post-btn");btn.disabled=true;btn.textContent="Posting…";
+  const vid=encodeVideoId(currentVideo.video_url);
+  try{
+    const r=await fetch(`${VID_API}/${vid}/comment`,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,videoTitle:currentVideo.title,videoThumb:currentVideo.thumbnail})});
+    const d=await r.json();
+    clearComment();prependComment(d.comment);
+    const old=parseInt(document.getElementById("comment-count").textContent)||0;
+    const nc=old+1;
+    document.getElementById("comment-count").textContent=nc;
+    document.getElementById("comment-count-2").textContent=`(${nc})`;
+  }catch(e){console.error(e);}
+  btn.disabled=false;btn.textContent="Post";
+}
+
+function renderComments(comments){
+  const list=document.getElementById("comments-list");
+  if(!comments.length){list.innerHTML=`<div class="no-comments">No comments yet. Be the first!</div>`;return;}
+  list.innerHTML=comments.map(c=>commentHTML(c)).join("");
+}
+
+function prependComment(c){
+  const list=document.getElementById("comments-list");
+  const nm=list.querySelector(".no-comments");if(nm)nm.remove();
+  list.insertAdjacentHTML("afterbegin",commentHTML(c));
+}
+
+function commentHTML(c){
+  const init=(c.username||"?")[0].toUpperCase();
+  const t=c.createdAt?relativeTime(new Date(c.createdAt)):"";
+  return `<div class="comment-item"><div class="c-avatar">${init}</div><div><div class="c-name">${escHtml(c.username||"User")}<span>${t}</span></div><div class="c-text">${escHtml(c.text)}</div></div></div>`;
+}
+
+/* ── SHARE ── */
+function openShare(){
+  document.getElementById("share-url-input").value=location.href;
+  document.getElementById("share-modal").classList.add("active");
+  document.getElementById("copy-msg").classList.remove("show");
+}
+function closeShare(){document.getElementById("share-modal").classList.remove("active");}
+async function copyShare(){
+  const input=document.getElementById("share-url-input");
+  try{await navigator.clipboard.writeText(input.value);}catch(e){input.select();document.execCommand("copy");}
+  const msg=document.getElementById("copy-msg");msg.classList.add("show");setTimeout(()=>msg.classList.remove("show"),2000);
+}
+
+/* ── RESTORE ── */
+async function restoreVideo(videoUrl){
+  try{const s=sessionStorage.getItem("vhp_video");if(s){const v=JSON.parse(s);if(v.video_url===videoUrl){playVideo(v,false);return;}}}catch(e){}
+  try{
+    const r=await fetch(`${API}?q=${encodeURIComponent(videoUrl)}&page=1`);
+    const d=await r.json();
+    const video=d.videos?.find(v=>v.video_url===videoUrl)||d.videos?.[0];
+    if(video){playVideo(video,false);return;}
+    document.getElementById("home").style.display="none";
+    document.getElementById("player-page").style.display="block";
+    const player=document.getElementById("player");
+    player.src=`/api/video?url=${encodeURIComponent(videoUrl)}`;player.load();
+  }catch(e){console.error(e);}
+}
+
+/* ── RELATED ── */
+async function loadRelated(){
+  try{
+    const r=await fetch(`${API}?q=${encodeURIComponent(currentVideo.title)}&page=${relPage}`);
+    const d=await r.json();renderCards(d.videos||[],"related-grid");relPage++;
+  }catch(e){console.error(e);}
+}
+
+/* ── CLOSE ── */
+function closeVideo(){
+  const p=document.getElementById("player");p.pause();p.src="";
+  document.getElementById("player-page").style.display="none";
+  document.getElementById("home").style.display="block";
+  history.pushState({},"","/");
+}
+
+/* ── UTILS ── */
+function escHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function relativeTime(d){const s=Math.floor((Date.now()-d)/1000);if(s<60)return"just now";if(s<3600)return`${Math.floor(s/60)}m ago`;if(s<86400)return`${Math.floor(s/3600)}h ago`;return`${Math.floor(s/86400)}d ago`;}
+
+init();
+</script>
+</body>
+</html>
